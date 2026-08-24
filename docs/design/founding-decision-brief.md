@@ -44,7 +44,7 @@
 
 参照 Python 生产实现移植选项/参照数据目录（聚合、作用域继承、变更审计、CQRS、路由工厂的 Go 等价形态待设计）。`UNBOUND`：消费者书面用例、API 形态、与 bento-go repository/eventing 缝的对接方式——动工前出专项简报。
 
-**同日另核查过 S3/对象存储能力：不立项。** Python 侧 bento/platform 均无此能力（无先例可移植）；唯一在场的真实用例（TMS exception evidence 切片）刻意把字节留在外部对象存储、schema 只存 `storage_ref` + 完整性元数据——它需要的是消费者自己的窄端口，不是共享能力；S3 SDK 薄封装没有可收敛的领域行为。触发条件与 options 同款：TMS 附件与 Parcel 面单/关务文档两边各自长出同形状适配器（预签名 URL 约定、租户级 bucket/key 规范、校验流程）后，再以 `blobstore` 能力立项走专项简报。
+**同日另核查过 S3/对象存储能力：不进本库，也不进框架。** Python 侧 bento/platform 均无此能力；TMS evidence 切片刻意把字节留在外部对象存储、schema 只存 `storage_ref` + 完整性元数据——消费者需要的是自己的窄端口；S3 SDK 薄封装没有可收敛的领域行为。**补充（同日晚）**：组合层面的重复已经真实存在——prism、phi-suite、obs 各自运行独立 MinIO 实例，sagapai/bento compose 各带一份，loms 依赖 boto3。维护者提出以**独立项目**收敛对象存储（统一基座 + 约定 + 多语言薄客户端库），评估已给出、待立项决策；该项目独立于本库，本库不承接。
 
 **2026-08-24 证据核查（options）：动工条件不成立。** TMS 把枚举刻意建模为领域闭集（`ubiquitous-language-gaps.md` 全文即该实践——异常态、风险等级、责任方类型等都落进 CONTEXT.md 的封闭词汇，不进运行时字典）；Parcel 的原因、优先级、责任结论同样是领域概念。两个消费者当前都没有"运行时可配置、作用域继承的选项目录"需求。切片二保持 `UNBOUND`，触发条件不变：任一消费者书面确认真实用例后先出专项简报。Python 侧的需求形态（prism/loms 的租户级下拉字典）不能替代 Go 消费者自己的证据。
 
