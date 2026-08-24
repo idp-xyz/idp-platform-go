@@ -23,7 +23,43 @@ idp-tms / idp-parcel       产品 — 注册单据类型/选项组、拥有数�
 ## 能力
 
 - **numbering（切片一）**：编号模板 DSL（令牌词汇表与 Python `FormatTemplate` 语义兼容）、重置粒度推导、Feistel FPE 加扰、校验位、序列技术表与原子分配、单据类型注册与 `assign`。已确认用例：TMS 运输任务编号 `TT-{yyyy}-{seq:4}`（年重置）、Parcel 对账单号 `STMT-{yyyy}{mm}-{seq:5}`（月重置）。暂缓：预留/认领、草稿持有 TTL、DB overlay 目录。
-- **options（切片二）**：选项/参照数据目录，参照 Python 生产实现移植；动工前补消费者书面用例。
+- **options（切片二）**：选项/参照数据目录，参照 Python 生产实现移植。2026-08-24 证据核查：两个消费者都把枚举建模为领域闭集，暂无运行时目录需求——保持 `UNBOUND` 不动工，任一消费者书面确认用例后先出专项简报（见[立库简报](./docs/design/founding-decision-brief.md)）。
+
+## 接入（numbering）
+
+```go
+import (
+    "go.idp.xyz/idp-bento-go/application"
+    bentopg "go.idp.xyz/idp-bento-go/postgres"
+    "go.idp.xyz/idp-platform-go/numbering"
+    numberingpg "go.idp.xyz/idp-platform-go/numbering/postgres"
+)
+
+// 1) 迁移：用消费者自己的迁移工具执行本库的不可变资产（启动时不得自动执行）。
+migrations, _ := numberingpg.Migrations(numberingpg.DefaultSchema)
+
+// 2) 装配：注册自己的单据类型，构造序列存储与取号入口。
+db, _ := bentopg.NewDB(pool)
+store, _ := numberingpg.NewSequenceStore(db)
+registry, _ := numbering.NewRegistry(map[string]numbering.DocTypeSpec{
+    "TRANSPORT_TASK": {Prefix: "TT", Template: "TT-{yyyy}-{seq:4}"},
+})
+assigner, _ := numbering.NewAssigner(registry, store,
+    numbering.WithScrambleSecret(secret)) // 仅 {seqx} 系列需要；密钥归消费者
+
+// 3) 事务内取号：分配与业务写入同生共死，回滚即释放号码。
+number, err := application.Transactional(ctx, db.Transactor(),
+    func(txCtx context.Context) (string, error) {
+        n, err := assigner.Assign(txCtx, "tenant-1", "TRANSPORT_TASK")
+        if err != nil {
+            return "", err
+        }
+        // …在同一 txCtx 内写业务行，把 n 存进单据字段…
+        return n, err
+    })
+```
+
+scope 由调用方显式传入（通常是权威租户标识），本库不从 context 推断范围。
 
 ## 基线
 

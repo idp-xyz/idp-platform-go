@@ -1,0 +1,75 @@
+name: Platform CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: platform-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Format, vet and tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      GOTOOLCHAIN: local
+      IDP_PLATFORM_POSTGRES_DSN: postgres://idp_platform_ci:idp_platform_ci@127.0.0.1:5432/idp_platform_ci?sslmode=disable
+    services:
+      postgres:
+        image: postgres:16.12-alpine@sha256:97ff59a4e30e08d1c11bdcd9455e7832368c0572b576c9092cde2df4ae5552a3
+        env:
+          POSTGRES_USER: idp_platform_ci
+          POSTGRES_PASSWORD: idp_platform_ci
+          POSTGRES_DB: idp_platform_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U idp_platform_ci -d idp_platform_ci"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 30
+    steps:
+      - name: Checkout platform
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          path: idp-platform-go
+
+      # go.mod 以本地 replace 指向框架检出；CI 按锁定候选版本落同名兄弟目录。
+      - name: Checkout framework at the pinned candidate
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          repository: idp-xyz/idp-bento-go
+          ref: v0.1.0-rc.1
+          path: idp-bento-go
+
+      - name: Set up Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version: 1.26.5
+          cache: true
+          cache-dependency-path: idp-platform-go/go.sum
+
+      - name: gofmt
+        working-directory: idp-platform-go
+        run: |
+          out="$(gofmt -l -e .)"
+          if [ -n "$out" ]; then
+            echo "$out"
+            echo "::error::gofmt found unformatted files"
+            exit 1
+          fi
+
+      - name: go vet
+        working-directory: idp-platform-go
+        run: go vet ./...
+
+      - name: go test
+        working-directory: idp-platform-go
+        run: go test -count=1 ./...
