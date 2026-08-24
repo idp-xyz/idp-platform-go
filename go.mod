@@ -6,7 +6,7 @@ toolchain go1.26.5
 
 require (
 	github.com/jackc/pgx/v5 v5.10.0
-	go.idp.xyz/idp-bento-go v0.1.0-rc.1
+	go.idp.xyz/idp-bento-go v0.1.0-rc.2
 )
 
 require (

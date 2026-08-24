@@ -46,7 +46,7 @@ jobs:
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           repository: idp-xyz/idp-bento-go
-          ref: v0.1.0-rc.1
+          ref: v0.1.0-rc.2
           path: idp-bento-go
 
       - name: Set up Go

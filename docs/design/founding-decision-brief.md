@@ -48,7 +48,7 @@
 
 ## 依赖规则
 
-- 依赖 `go.idp.xyz/idp-bento-go` 公共 API；开发期本地 `replace` 指向工作区检出，发布时锁定框架正式版本。
+- 依赖 `go.idp.xyz/idp-bento-go` 公共 API，跟随 TMS/Parcel 锁定的候选版本（当前 `v0.1.0-rc.2`）；开发期本地 `replace` 指向工作区检出，发布时锁定框架正式版本。
 - 生产依赖图不得出现框架 `internal`、`testkit`，不得出现产品包。
 - 纯算法包（模板/加扰/校验位）只依赖 Go 标准库，可被不需要数据库的消费者单独导入。
 
