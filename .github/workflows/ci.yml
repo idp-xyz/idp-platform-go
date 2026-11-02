@@ -20,6 +20,8 @@ jobs:
     timeout-minutes: 15
     env:
       GOTOOLCHAIN: local
+      # 框架经 go.idp.xyz vanity 解析、按 go.mod 锁定的候选版本直连拉取（模块解析合同：GOPRIVATE 派生 GONOPROXY/GONOSUMDB，不关全局校验）。
+      GOPRIVATE: go.idp.xyz
       IDP_PLATFORM_POSTGRES_DSN: postgres://idp_platform_ci:idp_platform_ci@127.0.0.1:5432/idp_platform_ci?sslmode=disable
     services:
       postgres:
@@ -40,14 +42,6 @@ jobs:
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           path: idp-platform-go
-
-      # go.mod 以本地 replace 指向框架检出；CI 按锁定候选版本落同名兄弟目录。
-      - name: Checkout framework at the pinned candidate
-        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
-        with:
-          repository: idp-xyz/idp-bento-go
-          ref: v0.1.0-rc.2
-          path: idp-bento-go
 
       - name: Set up Go
         uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
