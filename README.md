@@ -64,7 +64,7 @@ scope 由调用方显式传入（通常是权威租户标识），本库不从 c
 ## 基线
 
 - module path：`go.idp.xyz/idp-platform-go`（vanity 解析约定与 bento-go 一致）
-- Go `1.26.5`；依赖 `go.idp.xyz/idp-bento-go`（开发期本地 `replace`，发布随框架正式版锁定）
+- Go `1.26.5`；依赖 `go.idp.xyz/idp-bento-go`，锁定 TMS 与 Parcel 共同锁定的框架候选 `v0.1.0-rc.2`（不带本地 `replace`；构建需 `GOPRIVATE=go.idp.xyz`）
 - 加扰密钥等凭据由消费者持有，本库只接收参数
 
 ## 文档

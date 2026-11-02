@@ -20,6 +20,3 @@ require (
 	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/text v0.29.0 // indirect
 )
-
-// 开发期指向工作区检出；发布时移除并锁定框架正式版本。
-replace go.idp.xyz/idp-bento-go => ../idp-bento-go
